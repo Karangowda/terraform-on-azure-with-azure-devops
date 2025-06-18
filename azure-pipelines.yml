@@ -1,33 +1,37 @@
 trigger:
 - main
 
+# Pipeline Hierarchical Flow: Stages -> Jobs -> Steps
+
 stages:
 - stage: Build
-  displayName: Build Stage
+  displayName: "Build Stage"
   jobs:
   - job: Build
-    displayName: Build Job
+    displayName: "Build Job"
     pool:
-      vmImage: 'ubuntu-latest'
-    steps: 
-    - bash: |
-        echo "Contents in System Default Working Directory"
-        ls -R $(System.DefaultWorkingDirectory)
-
-    - bash: |
-        echo "Before copying Contents in Build Artifact Directory"
-        ls -R $(Build.ArtifactStagingDirectory)
+      name: local            # 👈 Name of your self-hosted agent pool
+      demands:
+        - Agent.OS -equals Windows_NT  # 👈 Optional: ensures it's a Windows agent
+    steps:
+    - powershell: |
+        Write-Host "Listing contents in System Default Working Directory:"
+        Get-ChildItem -Recurse "$(System.DefaultWorkingDirectory)"
+    
+    - powershell: |
+        Write-Host "Before copying, contents in Build Artifact Directory:"
+        Get-ChildItem -Recurse "$(Build.ArtifactStagingDirectory)"
 
     - task: CopyFiles@2
       inputs:
-        SourceFolder: '$(System.DefaultWorkingDirectory)/terraform-manifests'
+        SourceFolder: '$(System.DefaultWorkingDirectory)\terraform-manifests'
         Contents: '**'
         TargetFolder: '$(Build.ArtifactStagingDirectory)'
         OverWrite: true
 
-    - bash: |
-        echo "After copying to Build Artifact Directory"
-        ls -R $(Build.ArtifactStagingDirectory)
+    - powershell: |
+        Write-Host "After copying to Build Artifact Directory:"
+        Get-ChildItem -Recurse "$(Build.ArtifactStagingDirectory)"
 
     - task: PublishBuildArtifacts@1
       inputs:
