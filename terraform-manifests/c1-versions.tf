@@ -23,7 +23,8 @@ terraform {
 
 # Provider Block
 provider "azurerm" {
- features {}          
+ features {} 
+ subscription_id = "d6b1c5db-06df-4a0f-9a70-28f611c31722" # Replace with your Azure Subscription ID         
 }
 
 # Simple comment
